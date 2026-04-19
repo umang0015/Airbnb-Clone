@@ -1,0 +1,1 @@
+- [x] Step 1: Update app.js to use constructor syntax `new MongoStore(...)` as fallback

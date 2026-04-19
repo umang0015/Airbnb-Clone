@@ -1,0 +1,112 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="row">
+  <div class="col-8 offset-2">
+    <h3>Edit Listing</h3>
+    <form
+      method="POST"
+      action="/listings/<%= listing._id %>?_method=PUT"
+      class="needs-validation"
+      enctype="multipart/form-data"
+      novalidate
+    >
+      <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input
+          name="listing[title]"
+          value="<%= listing.title %>"
+          type="text"
+          class="form-control"
+          required
+        />
+        <div class="invalid-feedback">Please enter a title.</div>
+      </div>
+
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea name="listing[description]" class="form-control" rows="4" required><%= listing.description %></textarea>
+        <div class="invalid-feedback">Please enter a description.</div>
+      </div>
+
+      <% if (listing.image && listing.image.url) { %>
+      <div class="mb-3">
+        <label class="form-label">Current Image</label><br/>
+        <img
+          src="<%= listing.image.url.replace('/upload', '/upload/w_250') %>"
+          alt="current listing image"
+          class="img-thumbnail"
+          style="max-width: 200px; max-height: 200px; object-fit: cover;"
+        />
+      </div>
+      <% } %>
+
+      <div class="mb-3">
+        <label for="image" class="form-label">Upload New Image (optional)</label>
+        <input
+          type="file"
+          name="listing[image]"
+          accept="image/*"
+          class="form-control"
+        />
+      </div>
+
+      <div class="row">
+        <div class="mb-3 col-md-4">
+          <label for="price" class="form-label">Price</label>
+          <input
+            name="listing[price]"
+            placeholder="Enter price"
+            value="<%= listing.price ? listing.price : '' %>"
+            class="form-control"
+            type="number"
+            required
+          />
+          <div class="invalid-feedback">Please enter a price.</div>
+        </div>
+        <div class="mb-3 col-md-4">
+          <label for="country" class="form-label">Country</label>
+          <input
+            name="listing[country]"
+            placeholder="Enter country"
+            type="text"
+            value="<%= listing.country %>"
+            class="form-control"
+            required
+          />
+          <div class="invalid-feedback">Please enter a country.</div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="location" class="form-label">Location</label>
+        <input
+          type="text"
+          name="listing[location]"
+          placeholder="Enter location"
+          value="<%= listing.location %>"
+          class="form-control"
+          required
+        />
+        <div class="invalid-feedback">Please enter a location.</div>
+      </div>
+
+      <button class="btn btn-dark edit-btn mt-3">Update Listing</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  (() => {
+    'use strict';
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach((form) => {
+      form.addEventListener('submit', (event) => {
+        if (!form.checkValidity()) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  })();
+</script>

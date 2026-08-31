@@ -1,5 +1,18 @@
 require('dotenv').config();
 
+const dns = require('dns');
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1', '1.0.0.1']);
+} catch (e) {
+  console.log('DNS setServers failed:', e.message);
+}
+process.on('unhandledRejection', (reason) => {
+  console.log('Unhandled Rejection:', reason?.message || reason);
+});
+process.on('uncaughtException', (err) => {
+  console.log('Uncaught Exception:', err.message);
+});
+
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
@@ -21,6 +34,7 @@ const userRouter = require('./routes/user');
 const dbUrl = process.env.ATLASDB_URL || 'mongodb://127.0.0.1:27017/Mangoo';
 
 // Connect to DB without blocking server startup (Render health check needs immediate listen)
+mongoose.set('strictQuery', false);
 async function main() {
   try {
     await mongoose.connect(dbUrl, {
@@ -31,9 +45,11 @@ async function main() {
   } catch (err) {
     console.log('DB connection failed:', err.message);
     console.log('Check ATLASDB_URL and Atlas IP whitelist (0.0.0.0/0)');
+    console.log('Cluster may be deleted/paused - check cloud.mongodb.com');
   }
 }
 main();
+mongoose.connection.on('error', (err) => console.log('Mongoose error:', err.message));
 
 // View engine & middleware - must be BEFORE routes and BEFORE listen
 app.engine('ejs', ejsMate);
@@ -45,21 +61,26 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const secret = process.env.SECRET || 'mysupersecretcode';
 
-const store = MongoStore.create({
-  mongoUrl: dbUrl,
-  secret: secret,
-  touchAfter: 24 * 3600,
-  crypto: {
+let store;
+try {
+  store = MongoStore.create({
+    mongoUrl: dbUrl,
     secret: secret,
-  },
-});
-
-store.on('error', (err) => {
-  console.log('ERROR in Mongo Session Store', err.message);
-});
+    touchAfter: 24 * 3600,
+    crypto: {
+      secret: secret,
+    },
+  });
+  store.on('error', (err) => {
+    console.log('ERROR in Mongo Session Store', err.message);
+  });
+} catch (e) {
+  console.log('MongoStore create failed, using MemoryStore:', e.message);
+  store = undefined;
+}
 
 const sessionOptions = {
-  store,
+  ...(store ? { store } : {}),
   secret: secret,
   resave: false,
   saveUninitialized: true,

@@ -49,7 +49,9 @@ async function main() {
   }
 }
 main();
-mongoose.connection.on('error', (err) => console.log('Mongoose error:', err.message));
+mongoose.connection.on('error', (err) =>
+  console.log('Mongoose error:', err.message),
+);
 
 // View engine & middleware - must be BEFORE routes and BEFORE listen
 app.engine('ejs', ejsMate);
@@ -152,6 +154,10 @@ app.use((err, req, res, next) => {
 
 // IMPORTANT: Listen at the very end, immediately - don't wait for DB
 const port = process.env.PORT || 8080;
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server is running on port ${port}`);
-});
+if (require.main === module) {
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
+
+module.exports = app;

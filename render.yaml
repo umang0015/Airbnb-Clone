@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: airbnb-clone
+    env: node
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 18.19.0
+      - key: CLOUD_NAME
+        sync: false
+      - key: CLOUD_API_KEY
+        sync: false
+      - key: CLOUD_API_SECRET
+        sync: false
+      - key: ATLASDB_URL
+        sync: false
+      - key: SECRET
+        sync: false
